@@ -21,7 +21,7 @@ class NameViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        nameTextField.placeholder =
+        nameTextField.text =
             "名前を入力してね"
     }
 

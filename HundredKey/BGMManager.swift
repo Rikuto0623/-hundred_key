@@ -69,7 +69,7 @@ final class BGMManager {
 
             player?.numberOfLoops = -1
 
-            player?.volume = 0.5
+            player?.volume = 0.03
 
             player?.prepareToPlay()
 
