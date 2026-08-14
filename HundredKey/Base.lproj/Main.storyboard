@@ -80,7 +80,7 @@
             <objects>
                 <viewController id="F7i-Kk-rcw" customClass="HomeViewController" customModule="HundredKey" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="bKs-k9-Byy">
-                        <rect key="frame" x="0.0" y="0.0" width="402" height="802"/>
+                        <rect key="frame" x="0.0" y="0.0" width="402" height="812"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="スクリーンショット 2026-08-13 17.40.05" translatesAutoresizingMaskIntoConstraints="NO" id="Gx8-aE-h3l">
@@ -93,6 +93,7 @@
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title=""/>
                                 <connections>
+                                    <action selector="gachaButtonTapped:" destination="F7i-Kk-rcw" eventType="touchUpInside" id="eBR-Ie-GIZ"/>
                                     <segue destination="V0O-0C-6kc" kind="show" identifier="toGacha" id="7y2-HB-KTB"/>
                                 </connections>
                             </button>
@@ -102,6 +103,7 @@
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title=""/>
                                 <connections>
+                                    <action selector="petBookButtonTapped:" destination="F7i-Kk-rcw" eventType="touchUpInside" id="yMv-IW-BdR"/>
                                     <segue destination="QZV-9O-GeP" kind="show" identifier="toPetBook" id="F1n-mx-Egt"/>
                                 </connections>
                             </button>
@@ -110,6 +112,10 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" title=""/>
+                                <connections>
+                                    <action selector="rankingButtonTapped:" destination="F7i-Kk-rcw" eventType="touchUpInside" id="PHQ-Cg-20I"/>
+                                    <segue destination="fD6-gA-uHJ" kind="show" identifier="toRanking" id="5Nq-A8-3FE"/>
+                                </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qDO-v7-cfR">
                                 <rect key="frame" x="39" y="698" width="324" height="52"/>
@@ -225,7 +231,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cvQ-kk-kal" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1860" y="111"/>
+            <point key="canvasLocation" x="1859.7014925373132" y="110.52631578947367"/>
         </scene>
         <!--Settings View Controller-->
         <scene sceneID="vPY-Z5-kDd">
@@ -396,7 +402,7 @@
             <objects>
                 <viewController id="N4X-4v-cGV" customClass="CorrectViewController" customModule="HundredKey" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="sT8-tX-0vd">
-                        <rect key="frame" x="0.0" y="0.0" width="402" height="812"/>
+                        <rect key="frame" x="0.0" y="0.0" width="402" height="802"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="スクリーンショット 2026-08-13 17.40.39" translatesAutoresizingMaskIntoConstraints="NO" id="Ce7-Me-wgW">
@@ -447,7 +453,7 @@
             <objects>
                 <viewController id="ja5-kz-asK" customClass="WrongViewController" customModule="HundredKey" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hkp-2E-RcG">
-                        <rect key="frame" x="0.0" y="0.0" width="402" height="812"/>
+                        <rect key="frame" x="0.0" y="0.0" width="402" height="802"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="スクリーンショット 2026-08-13 17.41.21" translatesAutoresizingMaskIntoConstraints="NO" id="xnK-F9-rhY">
@@ -498,7 +504,7 @@
             <objects>
                 <viewController id="Is2-ns-B7C" customClass="ResultViewController" customModule="HundredKey" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="pft-uE-DLl">
-                        <rect key="frame" x="0.0" y="0.0" width="402" height="812"/>
+                        <rect key="frame" x="0.0" y="0.0" width="402" height="802"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="スクリーンショット 2026-08-13 17.42.51" translatesAutoresizingMaskIntoConstraints="NO" id="lb5-9V-DOS">
@@ -792,11 +798,85 @@
             </objects>
             <point key="canvasLocation" x="2632.8358208955224" y="-634.32494279176194"/>
         </scene>
+        <!--Ranking View Controller-->
+        <scene sceneID="gFl-ng-tLm">
+            <objects>
+                <viewController id="fD6-gA-uHJ" customClass="RankingViewController" customModule="HundredKey" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="ZpU-fO-ASk">
+                        <rect key="frame" x="0.0" y="0.0" width="402" height="802"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="スクリーンショット 2026-08-13 17.42.32" translatesAutoresizingMaskIntoConstraints="NO" id="IjU-L5-Ycq">
+                                <rect key="frame" x="0.0" y="0.0" width="402" height="874"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dMa-3a-q5C">
+                                <rect key="frame" x="41" y="644" width="319" height="73"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="戻る">
+                                    <fontDescription key="titleFontDescription" type="boldSystem" pointSize="35"/>
+                                    <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <segue destination="F7i-Kk-rcw" kind="show" id="ema-f5-29N"/>
+                                </connections>
+                            </button>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="LGm-gk-hud">
+                                <rect key="frame" x="16" y="253" width="370" height="369"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <label key="tableFooterView" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ランキング" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="SXo-pV-RAZ">
+                                    <rect key="frame" x="0.0" y="130.66666730244953" width="370" height="77"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="35"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <prototypes>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="RankingCell" textLabel="gOf-VP-OUD" detailTextLabel="KNZ-id-zn8" style="IBUITableViewCellStyleSubtitle" id="83w-dq-sqA">
+                                        <rect key="frame" x="0.0" y="50.333333969116211" width="370" height="52"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="83w-dq-sqA" id="tjQ-gY-znR">
+                                            <rect key="frame" x="0.0" y="0.0" width="370" height="52"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="gOf-VP-OUD">
+                                                    <rect key="frame" x="20" y="8" width="25" height="14.333333333333334"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="0.0"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Subtitle" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="KNZ-id-zn8">
+                                                    <rect key="frame" x="19.999999999999996" y="24.333333333333336" width="52.666666666666664" height="18"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                    </tableViewCell>
+                                </prototypes>
+                            </tableView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="hLF-b5-g7g"/>
+                        <color key="backgroundColor" red="0.85889340749999998" green="1" blue="0.89000000000000001" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="P92-k8-exh"/>
+                    <connections>
+                        <outlet property="rankingTableView" destination="LGm-gk-hud" id="6MN-6F-4U7"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="A2z-Gw-jv0" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1062.686567164179" y="-634.32494279176194"/>
+        </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="97F-Jm-76e"/>
-        <segue reference="aGQ-Fs-ibo"/>
-        <segue reference="GzJ-OK-IfU"/>
+        <segue reference="81h-Oa-EzU"/>
+        <segue reference="ema-f5-29N"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="Hiyokey" width="474" height="688"/>
@@ -806,6 +886,7 @@
         <image name="スクリーンショット 2026-08-13 17.40.39" width="268" height="450"/>
         <image name="スクリーンショット 2026-08-13 17.41.21" width="258" height="452"/>
         <image name="スクリーンショット 2026-08-13 17.41.36" width="228" height="374"/>
+        <image name="スクリーンショット 2026-08-13 17.42.32" width="290" height="472"/>
         <image name="スクリーンショット 2026-08-13 17.42.51" width="292" height="472"/>
         <image name="スクリーンショット 2026-08-13 17.43.05" width="284" height="472"/>
         <image name="スクリーンショット 2026-08-13 18.42.34" width="474" height="688"/>
