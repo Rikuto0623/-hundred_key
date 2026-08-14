@@ -5,194 +5,252 @@
 //  Created by 鈴木久美 on 2026/08/13.
 //
 
-//
-//  QuizViewController.swift
-//  Hundred_Key
-//
-
 import UIKit
 
-class QuizViewController: UIViewController {
+class QuizViewController: UIViewController, UITextFieldDelegate {
 
-    @IBOutlet weak var questionNumberLabel: UILabel!
+    // MARK: - UI
 
     @IBOutlet weak var questionLabel: UILabel!
-
+    @IBOutlet weak var questionNumberLabel: UILabel!
     @IBOutlet weak var answerTextField: UITextField!
-
     @IBOutlet weak var answerButton: UIButton!
+    @IBOutlet weak var timerLabel: UILabel!
+    @IBOutlet weak var progressView: UIProgressView!
 
+    // MARK: - 問題
 
-    private var randomNumber = 0
-
+    private var currentNumber = 0
     private var correctAnswer = 0
 
+    // MARK: - ゲーム
+
+    private let totalQuestions = 10
+    private var isAnswering = false
+    private var gameEnded = false
+
+    // MARK: - タイマー
+
+    private var timer: Timer?
+    private var startTime: Date?
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setupUI()
 
-        startQuestion()
+        GameSession.shared.startGame()
 
-        BGMManager.shared.stopBGM()
+        startTime = Date()
+        startTimer()
+
+        showNextQuestion()
     }
-
 
     private func setupUI() {
 
-        answerTextField.placeholder =
-            "答えを入力"
+        answerTextField.keyboardType = .numberPad
+        answerTextField.delegate = self
+        answerTextField.textAlignment = .center
 
-        answerTextField.keyboardType =
-            .numberPad
+        timerLabel.text = "0.0秒"
+        questionNumberLabel.text = "1 / 10"
 
-        answerTextField.textAlignment =
-            .center
+        progressView.progress = 0
 
-        answerButton.setTitle(
-            "答える",
-            for: .normal
-        )
-
-        answerButton.layer.cornerRadius =
-            12
+        answerButton.setTitle("回答", for: .normal)
     }
 
+    // MARK: - 次の問題
 
-    private func startQuestion() {
+    func showNextQuestion() {
 
-        randomNumber =
-            Int.random(in: 1...100)
+        // 10問終了
+        if GameSession.shared.isFinished {
+            goToResult()
+            return
+        }
 
-
-        correctAnswer =
-            100 - randomNumber
-
-
-        questionLabel.text =
-            "\(randomNumber) に\n何を足したら100になる？"
-
-
-        let number =
-            GameSession.shared.currentQuestion + 1
-
-
-        questionNumberLabel.text =
-            "第\(number)問 / 10問"
-
+        isAnswering = false
 
         answerTextField.text = ""
+        answerTextField.isEnabled = true
+        answerButton.isEnabled = true
 
-        answerTextField.becomeFirstResponder()
+        currentNumber = Int.random(in: 1...100)
+
+        correctAnswer = 100 - currentNumber
+
+        questionLabel.text =
+            "\(currentNumber) に何を足したら 100 になる？"
+
+        let question =
+            GameSession.shared.currentQuestion + 1
+
+        questionNumberLabel.text =
+            "\(question) / \(totalQuestions)"
+
+        progressView.progress =
+            Float(GameSession.shared.currentQuestion)
+            / Float(totalQuestions)
     }
 
+    // MARK: - 回答
 
-    @IBAction func answerButtonTapped(
-        _ sender: UIButton
-    ) {
+    @IBAction func answerButtonTapped(_ sender: UIButton) {
 
-        guard let text =
-                answerTextField.text
-        else {
+        submitAnswer()
+    }
+
+    func textFieldShouldReturn(
+        _ textField: UITextField
+    ) -> Bool {
+
+        submitAnswer()
+
+        return true
+    }
+
+    private func submitAnswer() {
+
+        guard !isAnswering else {
             return
         }
 
-
-        let input =
-            text.trimmingCharacters(
-                in: .whitespacesAndNewlines
-            )
-
-
-        if input.isEmpty {
-
-            showAlert(
-                title: "答えを入力してね",
-                message: "数字を入力してください。"
-            )
-
+        guard !gameEnded else {
             return
         }
 
-
-        guard let answer =
-                Int(input)
-        else {
-
-            showAlert(
-                title: "数字を入力してね",
-                message: "数字だけ入力してください。"
-            )
-
+        guard let text = answerTextField.text,
+              let answer = Int(text) else {
             return
         }
 
+        isAnswering = true
 
         answerTextField.resignFirstResponder()
+        answerTextField.isEnabled = false
+        answerButton.isEnabled = false
 
-
+        // 正解
         if answer == correctAnswer {
 
             GameSession.shared.addCorrect()
 
             performSegue(
-                withIdentifier: "toCorrect",
+                withIdentifier: "CorrectSegue",
                 sender: nil
             )
 
-        } else {
+        }
+
+        // 不正解
+        else {
 
             GameSession.shared.addWrong()
 
             performSegue(
-                withIdentifier: "toWrong",
+                withIdentifier: "WrongSegue",
                 sender: nil
             )
         }
     }
 
+    // MARK: - Result
+
+    func goToResult() {
+
+        guard !gameEnded else {
+            return
+        }
+
+        gameEnded = true
+
+        stopTimer()
+
+        progressView.progress = 1.0
+
+        performSegue(
+            withIdentifier: "ResultSegue",
+            sender: nil
+        )
+    }
+
+    // MARK: - Segue
 
     override func prepare(
         for segue: UIStoryboardSegue,
         sender: Any?
     ) {
 
-        if segue.identifier == "toWrong" {
+        if let correctVC =
+            segue.destination as? CorrectViewController {
 
-            if let wrongVC =
-                segue.destination
-                    as? WrongViewController {
+            correctVC.correctAnswer =
+                correctAnswer
 
-                wrongVC.correctAnswer =
-                    correctAnswer
+            correctVC.quizViewController = self
+        }
+
+        if let wrongVC =
+            segue.destination as? WrongViewController {
+
+            wrongVC.correctAnswer =
+                correctAnswer
+
+            wrongVC.quizViewController = self
+        }
+
+        if let resultVC =
+            segue.destination as? ResultViewController {
+
+            resultVC.correctCount =
+                GameSession.shared.correctCount
+
+            if let startTime = startTime {
+
+                resultVC.time =
+                    Date().timeIntervalSince(startTime)
+
+            } else {
+
+                resultVC.time = 0
             }
         }
     }
 
+    // MARK: - タイマー
 
-    private func showAlert(
-        title: String,
-        message: String
-    ) {
+    private func startTimer() {
 
-        let alert =
-            UIAlertController(
-                title: title,
-                message: message,
-                preferredStyle: .alert
-            )
+        timer?.invalidate()
 
-        alert.addAction(
-            UIAlertAction(
-                title: "OK",
-                style: .default
-            )
-        )
+        timer = Timer.scheduledTimer(
+            withTimeInterval: 0.1,
+            repeats: true
+        ) { [weak self] _ in
 
-        present(
-            alert,
-            animated: true
-        )
+            guard let self = self,
+                  let startTime = self.startTime else {
+                return
+            }
+
+            let elapsed =
+                Date().timeIntervalSince(startTime)
+
+            self.timerLabel.text =
+                String(format: "%.1f秒", elapsed)
+        }
+    }
+
+    private func stopTimer() {
+
+        timer?.invalidate()
+        timer = nil
+    }
+
+    deinit {
+
+        timer?.invalidate()
     }
 }

@@ -12,55 +12,78 @@
 
 import Foundation
 
-final class GameSession {
+class GameSession {
 
     static let shared = GameSession()
 
-    private init() {}
+    // MARK: - ゲーム設定
 
+    let totalQuestions: Int = 10
 
-    let totalQuestions = 10
+    // MARK: - ゲーム状態
 
+    var currentQuestion: Int = 0
+    var correctCount: Int = 0
+    var wrongCount: Int = 0
 
-    var currentQuestion = 0
+    // MARK: - 結果保存
 
-    var correctCount = 0
+    var resultSaved: Bool = false
 
-    var wrongCount = 0
+    // MARK: - ゲーム終了判定
 
-    var resultSaved = false
+    var isFinished: Bool {
+        return currentQuestion >= totalQuestions
+    }
 
+    private init() {
+    }
+
+    // MARK: - ゲーム開始
 
     func startGame() {
-
         currentQuestion = 0
-
         correctCount = 0
-
         wrongCount = 0
-
         resultSaved = false
     }
 
+    // MARK: - 正解
 
     func addCorrect() {
 
-        correctCount += 1
+        guard !isFinished else {
+            return
+        }
 
+        correctCount += 1
         currentQuestion += 1
     }
 
+    // MARK: - 不正解
 
     func addWrong() {
 
-        wrongCount += 1
+        guard !isFinished else {
+            return
+        }
 
+        wrongCount += 1
         currentQuestion += 1
     }
 
+    // MARK: - 結果保存
 
-    var isFinished: Bool {
+    func saveResult() {
+        resultSaved = true
+    }
 
-        return currentQuestion >= totalQuestions
+    // MARK: - リセット
+
+    func reset() {
+        currentQuestion = 0
+        correctCount = 0
+        wrongCount = 0
+        resultSaved = false
     }
 }

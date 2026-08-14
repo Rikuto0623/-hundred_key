@@ -14,127 +14,165 @@ import UIKit
 
 class ResultViewController: UIViewController {
 
-    @IBOutlet weak var resultTitleLabel: UILabel!
+    // MARK: - UI
 
-    @IBOutlet weak var correctCountLabel: UILabel!
-
+    @IBOutlet weak var scoreLabel: UILabel!
+    @IBOutlet weak var timeLabel: UILabel!
     @IBOutlet weak var accuracyLabel: UILabel!
-
+    @IBOutlet weak var rankLabel: UILabel!
     @IBOutlet weak var pointLabel: UILabel!
-
     @IBOutlet weak var petImageView: UIImageView!
-
     @IBOutlet weak var petNameLabel: UILabel!
-
     @IBOutlet weak var homeButton: UIButton!
 
-    @IBOutlet weak var gachaButton: UIButton!
+    // MARK: - Quizから受け取るデータ
 
+    var correctCount: Int = 0
+    var time: Double = 0.0
+
+    // MARK: - ポイント
+
+    private var earnedPoint: Int = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         showResult()
-
-        BGMManager.shared.playBGM()
+        showPet()
     }
 
+    // MARK: - 結果表示
 
     private func showResult() {
 
-        let session =
-            GameSession.shared
+        let totalQuestions = 10
 
-
-        let correct =
-            session.correctCount
-
-
-        let total =
-            session.totalQuestions
-
-
+        // 正答率
         let accuracy =
-            total > 0
-            ? Int(
-                Double(correct)
-                / Double(total)
-                * 100
+            Double(correctCount)
+            / Double(totalQuestions)
+            * 100
+
+        // スコア
+        scoreLabel.text =
+            "\(correctCount) / \(totalQuestions)問正解"
+
+        // タイム
+        timeLabel.text =
+            String(
+                format: "タイム %.1f秒",
+                time
             )
-            : 0
 
-
-        let earnedPoint =
-            correct * 10
-
-
-        correctCountLabel.text =
-            "正解数　\(correct) / \(total) 問"
-
-
+        // 正答率
         accuracyLabel.text =
-            "正解率　\(accuracy) %"
+            String(
+                format: "正答率 %.0f%%",
+                accuracy
+            )
 
+        // ランク
+        let rank =
+            calculateRank(
+                accuracy: accuracy
+            )
+
+        rankLabel.text =
+            "ランク \(rank)"
+
+        // ポイント
+        earnedPoint =
+            calculatePoint(
+                correctCount: correctCount
+            )
 
         pointLabel.text =
-            "獲得ポイント　+\(earnedPoint) pt"
+            "+\(earnedPoint)ポイント"
 
+        // ポイントを保存
+        savePoint()
+    }
 
-        if let pet =
-            PetManager.shared.selectedPet {
+    // MARK: - ランク計算
 
-            petNameLabel.text =
-                pet.name
+    private func calculateRank(
+        accuracy: Double
+    ) -> String {
 
-            petImageView.image =
-                UIImage(
-                    named: pet.imageName
-                )
-        }
+        if accuracy >= 90 {
+            return "S"
 
+        } else if accuracy >= 70 {
+            return "A"
 
-        if !session.resultSaved {
+        } else if accuracy >= 50 {
+            return "B"
 
-            PointManager.shared.add(
-                earnedPoint
-            )
-
-
-            let name =
-                UserDefaults.standard.string(
-                    forKey: "USER_NAME"
-                ) ?? "ゲスト"
-
-
-            RankingManager.shared.updatePoint(
-                name: name,
-                point: PointManager.shared.point
-            )
-
-
-            session.resultSaved = true
+        } else {
+            return "C"
         }
     }
 
+    // MARK: - ポイント計算
+
+    private func calculatePoint(
+        correctCount: Int
+    ) -> Int {
+
+        // 1問正解 = 10ポイント
+        return correctCount * 10
+    }
+
+    // MARK: - ポイント保存
+
+    private func savePoint() {
+
+        let oldPoint =
+            UserDefaults.standard.integer(
+                forKey: "POINT"
+            )
+
+        let newPoint =
+            oldPoint + earnedPoint
+
+        UserDefaults.standard.set(
+            newPoint,
+            forKey: "POINT"
+        )
+    }
+
+    // MARK: - ペット表示
+
+    private func showPet() {
+
+        petImageView.contentMode = .scaleAspectFit
+
+        guard let pet = PetManager.shared.selectedPet else {
+
+            petImageView.image = nil
+            petNameLabel.text = "ペットなし"
+
+            return
+        }
+
+        petImageView.image =
+            UIImage(named: pet.imageName)
+
+        petNameLabel.text =
+            pet.name
+    }
+
+    // MARK: - ホームへ
 
     @IBAction func homeButtonTapped(
         _ sender: UIButton
     ) {
 
+        GameSession.shared.reset()
+
         navigationController?
             .popToRootViewController(
                 animated: true
             )
-    }
-
-
-    @IBAction func gachaButtonTapped(
-        _ sender: UIButton
-    ) {
-
-        performSegue(
-            withIdentifier: "toGacha",
-            sender: nil
-        )
     }
 }

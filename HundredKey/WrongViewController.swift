@@ -5,70 +5,47 @@
 //  Created by 鈴木久美 on 2026/08/13.
 //
 
-//
-//  WrongViewController.swift
-//  Hundred_Key
-//
-
 import UIKit
 
 class WrongViewController: UIViewController {
 
-    @IBOutlet weak var messageLabel: UILabel!
-
-    @IBOutlet weak var answerLabel: UILabel!
-
+    @IBOutlet weak var correctAnswerLabel: UILabel!
     @IBOutlet weak var petImageView: UIImageView!
-
     @IBOutlet weak var nextButton: UIButton!
-
 
     var correctAnswer: Int = 0
 
+    // QuizViewを保持
+    weak var quizViewController: QuizViewController?
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        messageLabel.text =
-            "おしい！"
+        correctAnswerLabel.text =
+            "不正解！\n正解は \(correctAnswer)"
 
-        answerLabel.text =
-            "正解は \(correctAnswer) だよ！"
-
-        nextButton.setTitle(
-            "次へ",
-            for: .normal
-        )
-
-
-        if let pet =
-            PetManager.shared.selectedPet {
-
-            petImageView.image =
-                UIImage(
-                    named: pet.imageName
-                )
-        }
+        showPet()
     }
 
+    private func showPet() {
+
+        guard let pet =
+            PetManager.shared.selectedPet else {
+            return
+        }
+
+        petImageView.image =
+            UIImage(named: pet.imageName)
+    }
 
     @IBAction func nextButtonTapped(
         _ sender: UIButton
     ) {
 
-        if GameSession.shared.isFinished {
+        // QuizViewに戻る
+        dismiss(animated: true) {
 
-            performSegue(
-                withIdentifier: "toResult",
-                sender: nil
-            )
-
-        } else {
-
-            navigationController?
-                .popViewController(
-                    animated: true
-                )
+            self.quizViewController?.showNextQuestion()
         }
     }
 }
