@@ -5,173 +5,267 @@
 //  Created by 鈴木久美 on 2026/08/13.
 //
 
+//
+//  QuizViewController.swift
+//  hundredKey
+//
+
 import UIKit
 
 class QuizViewController: UIViewController, UITextFieldDelegate {
 
     // MARK: - UI
 
-    @IBOutlet weak var questionLabel: UILabel!
     @IBOutlet weak var questionNumberLabel: UILabel!
+    @IBOutlet weak var questionLabel: UILabel!
     @IBOutlet weak var answerTextField: UITextField!
     @IBOutlet weak var answerButton: UIButton!
-    @IBOutlet weak var timerLabel: UILabel!
     @IBOutlet weak var progressView: UIProgressView!
+    @IBOutlet weak var timerLabel: UILabel!
+    @IBOutlet weak var comboLabel: UILabel!
+    @IBOutlet weak var pointLabel: UILabel!
 
-    // MARK: - 問題
+    // MARK: - クイズ
 
-    private var currentNumber = 0
-    private var correctAnswer = 0
+    private var currentNumber: Int = 0
+    private var correctAnswer: Int = 0
 
-    // MARK: - ゲーム
+    // これが今回の correctCount エラーを直す部分
+    private var correctCount: Int = 0
 
-    private let totalQuestions = 10
-    private var isAnswering = false
-    private var gameEnded = false
+    private var questionCount: Int = 0
+    private let totalQuestions: Int = 10
+
+    // MARK: - コンボ
+
+    private var combo: Int = 0
+
+    // MARK: - ポイント
+
+    private var earnedPoint: Int = 0
 
     // MARK: - タイマー
 
     private var timer: Timer?
-    private var startTime: Date?
+    private var elapsedTime: Double = 0
+
+    // MARK: - Life Cycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         setupUI()
-
-        GameSession.shared.startGame()
-
-        startTime = Date()
-        startTimer()
-
-        showNextQuestion()
+        startQuiz()
     }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        timer?.invalidate()
+    }
+
+    // MARK: - UI設定
 
     private func setupUI() {
 
-        answerTextField.keyboardType = .numberPad
         answerTextField.delegate = self
-        answerTextField.textAlignment = .center
 
-        timerLabel.text = "0.0秒"
-        questionNumberLabel.text = "1 / 10"
+        answerTextField.keyboardType = .numberPad
+        answerTextField.placeholder = "答えを入力"
+
+        answerButton.setTitle("答える", for: .normal)
 
         progressView.progress = 0
 
-        answerButton.setTitle("回答", for: .normal)
+        comboLabel.text = "🔥 コンボ 0"
+
+        pointLabel.text = "⭐ 0 pt"
+
+        timerLabel.text = "⏱ 0 秒"
+
+        answerTextField.layer.cornerRadius = 10
+        answerButton.layer.cornerRadius = 10
+    }
+
+    // MARK: - クイズ開始
+
+    private func startQuiz() {
+
+        questionCount = 0
+        correctCount = 0
+        combo = 0
+        earnedPoint = 0
+        elapsedTime = 0
+
+        startTimer()
+
+        nextQuestion()
     }
 
     // MARK: - 次の問題
 
-    func showNextQuestion() {
+    private func nextQuestion() {
 
-        // 10問終了
-        if GameSession.shared.isFinished {
-            goToResult()
+        // 10問終わったら結果画面
+        if questionCount >= totalQuestions {
+
+            finishQuiz()
             return
         }
 
-        isAnswering = false
+        questionCount += 1
 
-        answerTextField.text = ""
-        answerTextField.isEnabled = true
-        answerButton.isEnabled = true
-
+        // 1〜100
         currentNumber = Int.random(in: 1...100)
 
+        // 100にするために足す数
         correctAnswer = 100 - currentNumber
 
-        questionLabel.text =
-            "\(currentNumber) に何を足したら 100 になる？"
-
-        let question =
-            GameSession.shared.currentQuestion + 1
-
         questionNumberLabel.text =
-            "\(question) / \(totalQuestions)"
+            "\(questionCount) / \(totalQuestions)"
 
-        progressView.progress =
-            Float(GameSession.shared.currentQuestion)
-            / Float(totalQuestions)
+        questionLabel.text =
+            "\(currentNumber) に\n何を足したら\n100になる？"
+
+        answerTextField.text = ""
+
+        updateProgress()
+
+        answerTextField.becomeFirstResponder()
     }
 
-    // MARK: - 回答
+    // MARK: - プログレス
+
+    private func updateProgress() {
+
+        let progress =
+            Float(questionCount) / Float(totalQuestions)
+
+        progressView.setProgress(
+            progress,
+            animated: true
+        )
+    }
+
+    // MARK: - 答える
 
     @IBAction func answerButtonTapped(_ sender: UIButton) {
 
-        submitAnswer()
+        checkAnswer()
     }
+
+    // MARK: - Enterでも回答
 
     func textFieldShouldReturn(
         _ textField: UITextField
     ) -> Bool {
 
-        submitAnswer()
+        checkAnswer()
 
         return true
     }
 
-    private func submitAnswer() {
+    // MARK: - 正解判定
 
-        guard !isAnswering else {
-            return
-        }
-
-        guard !gameEnded else {
-            return
-        }
+    private func checkAnswer() {
 
         guard let text = answerTextField.text,
               let answer = Int(text) else {
+
+            showInputAlert()
+
             return
         }
-
-        isAnswering = true
 
         answerTextField.resignFirstResponder()
-        answerTextField.isEnabled = false
-        answerButton.isEnabled = false
 
-        // 正解
         if answer == correctAnswer {
 
-            GameSession.shared.addCorrect()
+            // 正解数
+            correctCount += 1
 
-            performSegue(
-                withIdentifier: "CorrectSegue",
-                sender: nil
-            )
+            // コンボ
+            combo += 1
 
+            // ポイント
+            let point = 10 + (combo - 1) * 2
+
+            earnedPoint += point
+
+            // ミッション
+            MissionManager.shared.addCorrectAnswer()
+
+            // 正解画面
+            showCorrectView()
+
+        } else {
+
+            // 不正解
+            combo = 0
+
+            // 不正解画面
+            showWrongView()
         }
 
-        // 不正解
-        else {
-
-            GameSession.shared.addWrong()
-
-            performSegue(
-                withIdentifier: "WrongSegue",
-                sender: nil
-            )
-        }
+        updateCombo()
+        updatePoint()
     }
 
-    // MARK: - Result
+    // MARK: - コンボ表示
 
-    func goToResult() {
+    private func updateCombo() {
 
-        guard !gameEnded else {
-            return
-        }
+        comboLabel.text =
+            "🔥 コンボ \(combo)"
+    }
 
-        gameEnded = true
+    // MARK: - ポイント表示
 
-        stopTimer()
+    private func updatePoint() {
 
-        progressView.progress = 1.0
+        pointLabel.text =
+            "⭐ \(earnedPoint) pt"
+    }
+
+    // MARK: - 入力エラー
+
+    private func showInputAlert() {
+
+        let alert = UIAlertController(
+            title: "答えを入力してね",
+            message: "数字を入力してください。",
+            preferredStyle: .alert
+        )
+
+        alert.addAction(
+            UIAlertAction(
+                title: "OK",
+                style: .default
+            )
+        )
+
+        present(
+            alert,
+            animated: true
+        )
+    }
+
+    // MARK: - 正解画面
+
+    private func showCorrectView() {
 
         performSegue(
-            withIdentifier: "ResultSegue",
+            withIdentifier: "CorrectSegue",
+            sender: nil
+        )
+    }
+
+    // MARK: - 不正解画面
+
+    private func showWrongView() {
+
+        performSegue(
+            withIdentifier: "WrongSegue",
             sender: nil
         )
     }
@@ -186,37 +280,65 @@ class QuizViewController: UIViewController, UITextFieldDelegate {
         if let correctVC =
             segue.destination as? CorrectViewController {
 
-            correctVC.correctAnswer =
-                correctAnswer
+            correctVC.correctAnswer = correctAnswer
+            correctVC.point = 10 + (combo - 1) * 2
 
-            correctVC.quizViewController = self
+            correctVC.isLastQuestion =
+                questionCount >= totalQuestions
+
+            correctVC.onNext = { [weak self] in
+
+                self?.handleNextQuestion()
+            }
         }
 
         if let wrongVC =
             segue.destination as? WrongViewController {
 
-            wrongVC.correctAnswer =
-                correctAnswer
+            wrongVC.correctAnswer = correctAnswer
 
-            wrongVC.quizViewController = self
+            wrongVC.isLastQuestion =
+                questionCount >= totalQuestions
+
+            wrongVC.onNext = { [weak self] in
+
+                self?.handleNextQuestion()
+            }
         }
 
         if let resultVC =
             segue.destination as? ResultViewController {
 
-            resultVC.correctCount =
-                GameSession.shared.correctCount
-
-            if let startTime = startTime {
-
-                resultVC.time =
-                    Date().timeIntervalSince(startTime)
-
-            } else {
-
-                resultVC.time = 0
-            }
+            resultVC.correctCount = correctCount
+            resultVC.time = elapsedTime
+            resultVC.earnedPoint = earnedPoint
         }
+    }
+
+    // MARK: - 次の問題へ
+
+    private func handleNextQuestion() {
+
+        if questionCount >= totalQuestions {
+
+            finishQuiz()
+
+        } else {
+
+            nextQuestion()
+        }
+    }
+
+    // MARK: - 結果画面
+
+    private func finishQuiz() {
+
+        timer?.invalidate()
+
+        performSegue(
+            withIdentifier: "ResultSegue",
+            sender: nil
+        )
     }
 
     // MARK: - タイマー
@@ -226,31 +348,18 @@ class QuizViewController: UIViewController, UITextFieldDelegate {
         timer?.invalidate()
 
         timer = Timer.scheduledTimer(
-            withTimeInterval: 0.1,
+            withTimeInterval: 1.0,
             repeats: true
         ) { [weak self] _ in
 
-            guard let self = self,
-                  let startTime = self.startTime else {
+            guard let self = self else {
                 return
             }
 
-            let elapsed =
-                Date().timeIntervalSince(startTime)
+            self.elapsedTime += 1
 
             self.timerLabel.text =
-                String(format: "%.1f秒", elapsed)
+                "⏱ \(Int(self.elapsedTime)) 秒"
         }
-    }
-
-    private func stopTimer() {
-
-        timer?.invalidate()
-        timer = nil
-    }
-
-    deinit {
-
-        timer?.invalidate()
     }
 }

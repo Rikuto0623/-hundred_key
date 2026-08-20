@@ -6,37 +6,24 @@
 //
 
 
-//
-//  RankingViewController.swift
-//  Hundred_Key
-//
-
 import UIKit
 
-class RankingViewController: UIViewController {
+final class RankingViewController:
+    UIViewController {
 
-    @IBOutlet weak var rankingTableView: UITableView!
-
-
-    private var rankingUsers:
-        [RankingUser] = []
-
+    private let textView =
+        UITextView()
 
     override func viewDidLoad() {
+
         super.viewDidLoad()
 
-        rankingTableView.delegate =
-            self
+        title = "ランキング"
 
-        rankingTableView.dataSource =
-            self
+        setupUI()
 
-        rankingTableView.rowHeight =
-            60
-
-        loadRanking()
+        showRanking()
     }
-
 
     override func viewWillAppear(
         _ animated: Bool
@@ -44,83 +31,105 @@ class RankingViewController: UIViewController {
 
         super.viewWillAppear(animated)
 
-        loadRanking()
+        showRanking()
     }
 
+    private func setupUI() {
 
-    private func loadRanking() {
+        textView.isEditable =
+            false
 
-        rankingUsers =
-            RankingManager.shared.users
-
-        rankingUsers.sort {
-            $0.point > $1.point
-        }
-
-        rankingTableView.reloadData()
-    }
-}
-
-
-extension RankingViewController:
-    UITableViewDelegate,
-    UITableViewDataSource {
-
-
-    func tableView(
-        _ tableView: UITableView,
-        numberOfRowsInSection section: Int
-    ) -> Int {
-
-        return rankingUsers.count
-    }
-
-
-    func tableView(
-        _ tableView: UITableView,
-        cellForRowAt indexPath: IndexPath
-    ) -> UITableViewCell {
-
-        let cell =
-            tableView.dequeueReusableCell(
-                withIdentifier:
-                    "RankingCell",
-                for: indexPath
+        textView.font =
+            .boldSystemFont(
+                ofSize: 19
             )
 
+        view.addSubview(textView)
 
-        let user =
-            rankingUsers[indexPath.row]
+        textView.translatesAutoresizingMaskIntoConstraints =
+            false
 
+        NSLayoutConstraint.activate([
 
-        let rank =
-            indexPath.row + 1
+            textView.topAnchor.constraint(
+                equalTo:
+                    view.safeAreaLayoutGuide
+                    .topAnchor,
+                constant: 20
+            ),
 
+            textView.leadingAnchor.constraint(
+                equalTo:
+                    view.leadingAnchor,
+                constant: 20
+            ),
 
-        switch rank {
+            textView.trailingAnchor.constraint(
+                equalTo:
+                    view.trailingAnchor,
+                constant: -20
+            ),
 
-        case 1:
+            textView.bottomAnchor.constraint(
+                equalTo:
+                    view.bottomAnchor
+            )
+        ])
+    }
 
-            cell.textLabel?.text =
-                "👑 1位　\(user.name)　\(user.point) pt"
+    private func showRanking() {
 
-        case 2:
+        let ranking =
+            UserDefaults.standard.array(
+                forKey: "RANKING"
+            ) as? [[String: Any]] ?? []
 
-            cell.textLabel?.text =
-                "🥈 2位　\(user.name)　\(user.point) pt"
+        var text =
+            "🏆 ランキング\n\n"
 
-        case 3:
+        if ranking.isEmpty {
 
-            cell.textLabel?.text =
-                "🥉 3位　\(user.name)　\(user.point) pt"
+            text +=
+                "まだランキングがありません"
 
-        default:
+        } else {
 
-            cell.textLabel?.text =
-                "\(rank)位　\(user.name)　\(user.point) pt"
+            for (
+                index,
+                item
+            ) in ranking.enumerated() {
+
+                let name =
+                    item["name"] as? String
+                    ?? "ゲスト"
+
+                let point =
+                    item["point"] as? Int
+                    ?? 0
+
+                let medal: String
+
+                switch index {
+
+                case 0:
+                    medal = "👑"
+
+                case 1:
+                    medal = "🥈"
+
+                case 2:
+                    medal = "🥉"
+
+                default:
+                    medal = "\(index + 1)"
+                }
+
+                text +=
+                    "\(medal) \(name)　\(point) pt\n\n"
+            }
         }
 
-
-        return cell
+        textView.text =
+            text
     }
 }

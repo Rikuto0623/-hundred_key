@@ -5,189 +5,260 @@
 //  Created by 鈴木久美 on 2026/08/13.
 //
 
-
-//
-//  GachaViewController.swift
-//  Hundred_Key
-//
-
 import UIKit
 
-class GachaViewController: UIViewController {
+final class GachaViewController:
+    UIViewController {
 
-    @IBOutlet weak var pointLabel: UILabel!
+    private let titleLabel =
+        UILabel()
 
-    @IBOutlet weak var capsuleImageView: UIImageView!
+    private let pointLabel =
+        UILabel()
 
-    @IBOutlet weak var resultImageView: UIImageView!
+    private let capsuleImageView =
+        UIImageView()
 
-    @IBOutlet weak var resultNameLabel: UILabel!
+    private let resultLabel =
+        UILabel()
 
-    @IBOutlet weak var resultRarityLabel: UILabel!
+    private let oneButton =
+        UIButton(type: .system)
 
-    @IBOutlet weak var gachaButton: UIButton!
+    private let tenButton =
+        UIButton(type: .system)
 
+    private let historyButton =
+        UIButton(type: .system)
 
     override func viewDidLoad() {
+
         super.viewDidLoad()
 
-        resultImageView.isHidden = true
-        resultNameLabel.isHidden = true
-        resultRarityLabel.isHidden = true
+        title = "ガチャ"
 
-        updatePoint()
+        setupUI()
+
+        updatePoints()
     }
 
+    private func setupUI() {
 
-    override func viewWillAppear(
-        _ animated: Bool
+        view.backgroundColor =
+            UIColor.systemPink
+                .withAlphaComponent(0.08)
+
+        titleLabel.text =
+            "🎰 ガチャ"
+
+        titleLabel.textAlignment =
+            .center
+
+        titleLabel.font =
+            .boldSystemFont(
+                ofSize: 31
+            )
+
+        pointLabel.textAlignment =
+            .center
+
+        pointLabel.font =
+            .boldSystemFont(
+                ofSize: 19
+            )
+
+        capsuleImageView.image =
+            UIImage(
+                named:
+                    "gacha_machine"
+            )
+
+        capsuleImageView.contentMode =
+            .scaleAspectFit
+
+        resultLabel.textAlignment =
+            .center
+
+        resultLabel.numberOfLines =
+            0
+
+        makeButton(
+            oneButton,
+            title:
+                "1回ガチャ　10pt"
+        )
+
+        makeButton(
+            tenButton,
+            title:
+                "10連ガチャ　100pt"
+        )
+
+        makeButton(
+            historyButton,
+            title:
+                "ガチャ履歴"
+        )
+
+        oneButton.addTarget(
+            self,
+            action: #selector(oneGacha),
+            for: .touchUpInside
+        )
+
+        tenButton.addTarget(
+            self,
+            action: #selector(tenGacha),
+            for: .touchUpInside
+        )
+
+        historyButton.addTarget(
+            self,
+            action: #selector(history),
+            for: .touchUpInside
+        )
+
+        let stack =
+            UIStackView(
+                arrangedSubviews: [
+                    titleLabel,
+                    pointLabel,
+                    capsuleImageView,
+                    resultLabel,
+                    oneButton,
+                    tenButton,
+                    historyButton
+                ]
+            )
+
+        stack.axis = .vertical
+        stack.spacing = 10
+
+        view.addSubview(stack)
+
+        stack.translatesAutoresizingMaskIntoConstraints =
+            false
+
+        NSLayoutConstraint.activate([
+
+            stack.centerYAnchor.constraint(
+                equalTo:
+                    view.centerYAnchor
+            ),
+
+            stack.leadingAnchor.constraint(
+                equalTo:
+                    view.leadingAnchor,
+                constant: 35
+            ),
+
+            stack.trailingAnchor.constraint(
+                equalTo:
+                    view.trailingAnchor,
+                constant: -35
+            ),
+
+            capsuleImageView.heightAnchor.constraint(
+                equalToConstant: 180
+            )
+        ])
+    }
+
+    private func makeButton(
+        _ button: UIButton,
+        title: String
     ) {
 
-        super.viewWillAppear(animated)
+        button.setTitle(
+            title,
+            for: .normal
+        )
 
-        updatePoint()
+        button.setTitleColor(
+            .white,
+            for: .normal
+        )
+
+        button.backgroundColor =
+            .systemRed
+
+        button.layer.cornerRadius =
+            12
+
+        button.heightAnchor.constraint(
+            equalToConstant: 50
+        ).isActive = true
     }
 
-
-    private func updatePoint() {
+    private func updatePoints() {
 
         pointLabel.text =
-            "\(PointManager.shared.point) pt"
+            "🪙 \(PointManager.shared.points) pt"
     }
 
+    @objc private func oneGacha() {
 
-    @IBAction func gachaButtonTapped(
-        _ sender: UIButton
-    ) {
+        guard
+            PointManager.shared.points >= 10
+        else {
 
-        let cost = 10
-
-
-        if PointManager.shared.point < cost {
-
-            showAlert(
-                title: "ポイント不足",
-                message: "ガチャには10pt必要だよ。"
-            )
+            resultLabel.text =
+                "ポイントが足りないよ"
 
             return
         }
 
+        PointManager.shared.subtract(
+            10
+        )
+
+        let pet =
+            GachaManager.shared.draw()
+
+        resultLabel.text =
+            "\(pet.name)\n\(pet.rarityText)\nGET！"
+
+        updatePoints()
+    }
+
+    @objc private func tenGacha() {
+
+        guard
+            PointManager.shared.points >= 100
+        else {
+
+            resultLabel.text =
+                "100pt必要だよ"
+
+            return
+        }
 
         PointManager.shared.subtract(
-            cost
+            100
         )
 
+        let pets =
+            GachaManager.shared.tenDraw()
 
-        // ガチャ抽選
-        let pet =
-            drawPet()
+        var text =
+            "🎉 10連結果 🎉\n\n"
 
+        for pet in pets {
 
-        // ペット登録
-        PetManager.shared.addPet(
-            pet
-        )
-
-
-        showResult(
-            pet: pet
-        )
-
-
-        updatePoint()
-    }
-
-
-    private func drawPet() -> Pet {
-
-        let random =
-            Int.random(
-                in: 1...100
-            )
-
-
-        if random <= 2 {
-
-            return PetManager.shared.allPets[9]
-
-        } else if random <= 5 {
-
-            return PetManager.shared.allPets[8]
-
-        } else if random <= 15 {
-
-            return PetManager.shared.allPets[
-                Int.random(in: 6...7)
-            ]
-
-        } else if random <= 35 {
-
-            return PetManager.shared.allPets[
-                Int.random(in: 4...5)
-            ]
-
-        } else if random <= 65 {
-
-            return PetManager.shared.allPets[
-                Int.random(in: 2...3)
-            ]
-
-        } else {
-
-            return PetManager.shared.allPets[
-                Int.random(in: 0...1)
-            ]
+            text +=
+                "\(pet.name) \(pet.rarityText)\n"
         }
+
+        resultLabel.text =
+            text
+
+        updatePoints()
     }
 
+    @objc private func history() {
 
-    private func showResult(
-        pet: Pet
-    ) {
-
-        resultImageView.image =
-            UIImage(
-                named: pet.imageName
-            )
-
-        resultNameLabel.text =
-            pet.name
-
-        resultRarityLabel.text =
-            String(
-                repeating: "★",
-                count: pet.rarity
-            )
-
-
-        resultImageView.isHidden = false
-        resultNameLabel.isHidden = false
-        resultRarityLabel.isHidden = false
-    }
-
-
-    private func showAlert(
-        title: String,
-        message: String
-    ) {
-
-        let alert =
-            UIAlertController(
-                title: title,
-                message: message,
-                preferredStyle: .alert
-            )
-
-        alert.addAction(
-            UIAlertAction(
-                title: "OK",
-                style: .default
-            )
-        )
-
-        present(
-            alert,
+        navigationController?.pushViewController(
+            GachaHistoryViewController(),
             animated: true
         )
     }

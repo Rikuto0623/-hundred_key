@@ -1,62 +1,234 @@
 //
-//  SettingsViewController.swift
+//  SettingsViewController 2.swift
 //  HundredKey
 //
-//  Created by 鈴木久美 on 2026/08/13.
+//  Created by 鈴木久美 on 2026/08/19.
 //
 
-//
-//  SettingsViewController.swift
-//  Hundred_Key
-//
 
 import UIKit
 
-class SettingsViewController: UIViewController {
+final class SettingsViewController:
+    UIViewController {
 
-    @IBOutlet weak var nameTextField: UITextField!
+    private let nameTextField =
+        UITextField()
 
-    @IBOutlet weak var pointLabel: UILabel!
+    private let ageTextField =
+        UITextField()
 
-    @IBOutlet weak var bgmSwitch: UISwitch!
+    private let bgmSwitch =
+        UISwitch()
 
-    @IBOutlet weak var soundSwitch: UISwitch!
+    private let soundSwitch =
+        UISwitch()
 
+    private let saveButton =
+        UIButton(type: .system)
+
+    private let resetButton =
+        UIButton(type: .system)
 
     override func viewDidLoad() {
+
         super.viewDidLoad()
 
-        loadSettings()
-    }
+        title = "設定"
 
-
-    override func viewWillAppear(
-        _ animated: Bool
-    ) {
-
-        super.viewWillAppear(animated)
+        setupUI()
 
         loadSettings()
     }
 
+    private func setupUI() {
+
+        view.backgroundColor =
+            .systemBackground
+
+        nameTextField.placeholder =
+            "名前"
+
+        nameTextField.borderStyle =
+            .roundedRect
+
+        ageTextField.placeholder =
+            "年齢"
+
+        ageTextField.borderStyle =
+            .roundedRect
+
+        ageTextField.keyboardType =
+            .numberPad
+
+        bgmSwitch.isOn =
+            true
+
+        soundSwitch.isOn =
+            true
+
+        let bgmRow =
+            makeRow(
+                title: "BGM",
+                control: bgmSwitch
+            )
+
+        let soundRow =
+            makeRow(
+                title: "効果音",
+                control: soundSwitch
+            )
+
+        saveButton.setTitle(
+            "保存",
+            for: .normal
+        )
+
+        saveButton.setTitleColor(
+            .white,
+            for: .normal
+        )
+
+        saveButton.backgroundColor =
+            .systemGreen
+
+        saveButton.layer.cornerRadius =
+            12
+
+        saveButton.addTarget(
+            self,
+            action: #selector(save),
+            for: .touchUpInside
+        )
+
+        resetButton.setTitle(
+            "データリセット",
+            for: .normal
+        )
+
+        resetButton.setTitleColor(
+            .white,
+            for: .normal
+        )
+
+        resetButton.backgroundColor =
+            .systemRed
+
+        resetButton.layer.cornerRadius =
+            12
+
+        resetButton.addTarget(
+            self,
+            action: #selector(resetData),
+            for: .touchUpInside
+        )
+
+        let stack =
+            UIStackView(
+                arrangedSubviews: [
+                    nameTextField,
+                    ageTextField,
+                    bgmRow,
+                    soundRow,
+                    saveButton,
+                    resetButton
+                ]
+            )
+
+        stack.axis = .vertical
+
+        stack.spacing = 15
+
+        view.addSubview(stack)
+
+        stack.translatesAutoresizingMaskIntoConstraints =
+            false
+
+        NSLayoutConstraint.activate([
+
+            stack.centerYAnchor.constraint(
+                equalTo:
+                    view.centerYAnchor
+            ),
+
+            stack.leadingAnchor.constraint(
+                equalTo:
+                    view.leadingAnchor,
+                constant: 40
+            ),
+
+            stack.trailingAnchor.constraint(
+                equalTo:
+                    view.trailingAnchor,
+                constant: -40
+            ),
+
+            nameTextField.heightAnchor.constraint(
+                equalToConstant: 50
+            ),
+
+            ageTextField.heightAnchor.constraint(
+                equalToConstant: 50
+            ),
+
+            saveButton.heightAnchor.constraint(
+                equalToConstant: 50
+            ),
+
+            resetButton.heightAnchor.constraint(
+                equalToConstant: 50
+            )
+        ])
+    }
+
+    private func makeRow(
+        title: String,
+        control: UISwitch
+    ) -> UIView {
+
+        let label =
+            UILabel()
+
+        label.text =
+            title
+
+        label.font =
+            .boldSystemFont(
+                ofSize: 18
+            )
+
+        let row =
+            UIStackView(
+                arrangedSubviews: [
+                    label,
+                    control
+                ]
+            )
+
+        row.axis =
+            .horizontal
+
+        row.distribution =
+            .equalSpacing
+
+        return row
+    }
 
     private func loadSettings() {
 
         nameTextField.text =
             UserDefaults.standard.string(
                 forKey: "USER_NAME"
-            ) ?? ""
+            )
 
-
-        pointLabel.text =
-            "現在のポイント：\(PointManager.shared.point) pt"
-
+        ageTextField.text =
+            UserDefaults.standard.string(
+                forKey: "USER_AGE"
+            )
 
         bgmSwitch.isOn =
             UserDefaults.standard.object(
                 forKey: "BGM_ON"
             ) as? Bool ?? true
-
 
         soundSwitch.isOn =
             UserDefaults.standard.object(
@@ -64,117 +236,42 @@ class SettingsViewController: UIViewController {
             ) as? Bool ?? true
     }
 
-
-    // MARK: - 名前保存
-
-    @IBAction func saveNameButtonTapped(
-        _ sender: UIButton
-    ) {
-
-        guard let text =
-                nameTextField.text
-        else {
-            return
-        }
-
-
-        let newName =
-            text.trimmingCharacters(
-                in: .whitespacesAndNewlines
-            )
-
-
-        if newName.isEmpty {
-
-            showAlert(
-                title: "名前を入力してね",
-                message: "名前が空欄です。"
-            )
-
-            return
-        }
-
-
-        let oldName =
-            UserDefaults.standard.string(
-                forKey: "USER_NAME"
-            ) ?? ""
-
-
-        let point =
-            PointManager.shared.point
-
+    @objc private func save() {
 
         UserDefaults.standard.set(
-            newName,
+            nameTextField.text ?? "ゲスト",
             forKey: "USER_NAME"
         )
 
-
-        RankingManager.shared.changeName(
-            oldName: oldName,
-            newName: newName,
-            point: point
+        UserDefaults.standard.set(
+            ageTextField.text ?? "",
+            forKey: "USER_AGE"
         )
-
-
-        showAlert(
-            title: "保存しました",
-            message: "名前を変更しました。"
-        )
-    }
-
-
-    // MARK: - BGM
-
-    @IBAction func bgmSwitchChanged(
-        _ sender: UISwitch
-    ) {
 
         UserDefaults.standard.set(
-            sender.isOn,
+            bgmSwitch.isOn,
             forKey: "BGM_ON"
         )
 
-
-        if sender.isOn {
-
-            BGMManager.shared.playBGM()
-
-        } else {
-
-            BGMManager.shared.stopBGM()
-        }
-    }
-
-
-    // MARK: - 効果音
-
-    @IBAction func soundSwitchChanged(
-        _ sender: UISwitch
-    ) {
-
         UserDefaults.standard.set(
-            sender.isOn,
+            soundSwitch.isOn,
             forKey: "SOUND_ON"
+        )
+
+        navigationController?.popViewController(
+            animated: true
         )
     }
 
-
-    // MARK: - データリセット
-
-    @IBAction func resetButtonTapped(
-        _ sender: UIButton
-    ) {
+    @objc private func resetData() {
 
         let alert =
             UIAlertController(
                 title: "データリセット",
                 message:
-                    "すべてのデータを削除しますか？",
+                    "本当に全部のデータを消しますか？",
                 preferredStyle: .alert
             )
-
 
         alert.addAction(
             UIAlertAction(
@@ -183,62 +280,47 @@ class SettingsViewController: UIViewController {
             )
         )
 
-
         alert.addAction(
             UIAlertAction(
                 title: "リセット",
                 style: .destructive
             ) { _ in
 
-                PointManager.shared.reset()
+                let defaults =
+                    UserDefaults.standard
 
-                PetManager.shared.reset()
+                let keys = [
+                    "POINT",
+                    "USER_NAME",
+                    "USER_AGE",
+                    "OWNED_PETS",
+                    "SELECTED_PET",
+                    "RANKING",
+                    "GACHA_DRAW_COUNT",
+                    "GACHA_HISTORY",
+                    "MISSION_DATE",
+                    "MISSION_CORRECT",
+                    "MISSION_REWARD"
+                ]
 
-                RankingManager.shared.resetRanking()
+                for key in keys {
 
-                UserDefaults.standard.removeObject(
-                    forKey: "USER_NAME"
-                )
+                    defaults.removeObject(
+                        forKey: key
+                    )
+                }
 
+                PetManager.shared
+                    .ownedPetNames =
+                    ["ヒヨキー"]
+
+                PetManager.shared
+                    .selectedPetName =
+                    "ヒヨキー"
 
                 self.loadSettings()
-
-
-                self.showAlert(
-                    title: "リセット完了",
-                    message: "データをリセットしました。"
-                )
             }
         )
-
-
-        present(
-            alert,
-            animated: true
-        )
-    }
-
-
-    private func showAlert(
-        title: String,
-        message: String
-    ) {
-
-        let alert =
-            UIAlertController(
-                title: title,
-                message: message,
-                preferredStyle: .alert
-            )
-
-
-        alert.addAction(
-            UIAlertAction(
-                title: "OK",
-                style: .default
-            )
-        )
-
 
         present(
             alert,

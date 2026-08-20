@@ -5,12 +5,6 @@
 //  Created by 鈴木久美 on 2026/08/13.
 //
 
-
-//
-//  PointManager.swift
-//  Hundred_Key
-//
-
 import Foundation
 
 final class PointManager {
@@ -19,48 +13,36 @@ final class PointManager {
 
     private init() {}
 
-    private let pointKey = "POINT"
+    private let key = "POINT"
 
-
-    var point: Int {
+    var points: Int {
 
         get {
-            return UserDefaults.standard.integer(
-                forKey: pointKey
+            UserDefaults.standard.integer(
+                forKey: key
             )
         }
 
         set {
             UserDefaults.standard.set(
-                newValue,
-                forKey: pointKey
+                max(0, newValue),
+                forKey: key
             )
         }
     }
 
+    func add(_ amount: Int) {
 
-    func add(
-        _ value: Int
-    ) {
-
-        point += value
+        points += amount
     }
 
+    func subtract(_ amount: Int) {
 
-    func subtract(
-        _ value: Int
-    ) {
-
-        point =
-            max(
-                0,
-                point - value
-            )
+        points -= amount
     }
-
 
     func reset() {
 
-        point = 0
+        points = 0
     }
 }

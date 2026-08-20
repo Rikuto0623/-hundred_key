@@ -12,78 +12,216 @@
 
 import Foundation
 
-class GameSession {
+final class GameSession {
 
-    static let shared = GameSession()
+    static let shared =
+        GameSession()
 
-    // MARK: - ゲーム設定
+    private init() {}
 
-    let totalQuestions: Int = 10
+    // MARK: - 設定
 
-    // MARK: - ゲーム状態
+    let maxQuestions = 10
 
-    var currentQuestion: Int = 0
-    var correctCount: Int = 0
-    var wrongCount: Int = 0
+    // MARK: - 問題
 
-    // MARK: - 結果保存
+    private(set) var currentQuestion = 0
 
-    var resultSaved: Bool = false
+    private(set) var correctCount = 0
 
-    // MARK: - ゲーム終了判定
+    private(set) var wrongCount = 0
 
-    var isFinished: Bool {
-        return currentQuestion >= totalQuestions
-    }
+    // MARK: - コンボ
 
-    private init() {
-    }
+    private(set) var combo = 0
+
+    private(set) var maxCombo = 0
+
+    // MARK: - ポイント
+
+    private(set) var gamePoints = 0
+
+    // MARK: - 時間
+
+    private var startTime: Date?
+
+    // MARK: - ボス
+
+    var boss: Boss?
+
+    var bossDamage = 0
+
+    // MARK: - 爆弾
+
+    var bombCount = 0
+
+    // MARK: - 結果
+
+    var resultSaved = false
 
     // MARK: - ゲーム開始
 
     func startGame() {
+
         currentQuestion = 0
+
         correctCount = 0
+
         wrongCount = 0
+
+        combo = 0
+
+        maxCombo = 0
+
+        gamePoints = 0
+
+        startTime = Date()
+
+        boss = nil
+
+        bossDamage = 0
+
+        bombCount = 0
+
         resultSaved = false
+
+        BombGameManager.shared.reset()
+
+        BossManager.shared.reset()
+
+        DailyMissionManager.shared
+            .resetIfNeeded()
+    }
+
+    // MARK: - 問題開始
+
+    func startNextQuestion() -> Bool {
+
+        if currentQuestion >= maxQuestions {
+
+            return false
+        }
+
+        currentQuestion += 1
+
+        return true
     }
 
     // MARK: - 正解
 
     func addCorrect() {
 
-        guard !isFinished else {
-            return
+        correctCount += 1
+
+        combo += 1
+
+        if combo > maxCombo {
+
+            maxCombo = combo
         }
 
-        correctCount += 1
-        currentQuestion += 1
+        let basePoint = 10
+
+        let comboBonus =
+            min(combo * 2, 10)
+
+        gamePoints +=
+            basePoint + comboBonus
+
+        DailyMissionManager.shared
+            .addCorrect()
+
+        if boss != nil {
+
+            boss?.damage(1)
+
+            bossDamage += 1
+        }
     }
 
     // MARK: - 不正解
 
     func addWrong() {
 
-        guard !isFinished else {
-            return
+        wrongCount += 1
+
+        combo = 0
+    }
+
+    // MARK: - 爆弾
+
+    func hitBomb() {
+
+        bombCount += 1
+
+        gamePoints -= 5
+
+        if gamePoints < 0 {
+
+            gamePoints = 0
         }
 
-        wrongCount += 1
-        currentQuestion += 1
+        combo = 0
     }
 
-    // MARK: - 結果保存
+    // MARK: - ボス開始
 
-    func saveResult() {
-        resultSaved = true
+    func startBoss() {
+
+        boss =
+            Boss(
+                name: "キングボス",
+                maxHP: 3,
+                hp: 3
+            )
     }
 
-    // MARK: - リセット
+    // MARK: - 終了
 
-    func reset() {
-        currentQuestion = 0
-        correctCount = 0
-        wrongCount = 0
-        resultSaved = false
+    var isFinished: Bool {
+
+        currentQuestion >= maxQuestions
+    }
+
+    // MARK: - 正解率
+
+    var accuracy: Double {
+
+        guard currentQuestion > 0 else {
+
+            return 0
+        }
+
+        return
+            Double(correctCount)
+            /
+            Double(currentQuestion)
+            *
+            100
+    }
+
+    // MARK: - 時間
+
+    var elapsedTime: Double {
+
+        guard
+            let startTime
+        else {
+            return 0
+        }
+
+        return
+            Date().timeIntervalSince(
+                startTime
+            )
+    }
+
+    // MARK: - 最終ポイント
+
+    func savePoints() {
+
+        PointManager.shared.add(
+            gamePoints
+        )
     }
 }

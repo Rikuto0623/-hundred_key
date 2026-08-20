@@ -5,123 +5,119 @@
 //  Created by 鈴木久美 on 2026/08/13.
 //
 
-
-//
-//  PetSelectViewController.swift
-//  Hundred_Key
-//
-
 import UIKit
 
-class PetSelectViewController: UIViewController {
+final class PetSelectViewController:
+    UIViewController {
 
-    @IBOutlet weak var tableView: UITableView!
-
-
-    private var pets: [Pet] = []
-
+    private let stack =
+        UIStackView()
 
     override func viewDidLoad() {
+
         super.viewDidLoad()
 
-        tableView.delegate = self
-        tableView.dataSource = self
+        title = "ペット選択"
 
-        pets =
-            PetManager.shared.ownedPets
+        setupUI()
+
+        showPets()
     }
 
+    private func setupUI() {
 
-    override func viewWillAppear(
-        _ animated: Bool
-    ) {
+        stack.axis = .vertical
 
-        super.viewWillAppear(animated)
+        stack.spacing = 10
 
-        pets =
-            PetManager.shared.ownedPets
+        stack.alignment =
+            .fill
 
-        tableView.reloadData()
+        view.addSubview(stack)
+
+        stack.translatesAutoresizingMaskIntoConstraints =
+            false
+
+        NSLayoutConstraint.activate([
+
+            stack.topAnchor.constraint(
+                equalTo:
+                    view.safeAreaLayoutGuide
+                    .topAnchor,
+                constant: 20
+            ),
+
+            stack.leadingAnchor.constraint(
+                equalTo:
+                    view.leadingAnchor,
+                constant: 30
+            ),
+
+            stack.trailingAnchor.constraint(
+                equalTo:
+                    view.trailingAnchor,
+                constant: -30
+            )
+        ])
     }
-}
 
+    private func showPets() {
 
-extension PetSelectViewController:
-    UITableViewDelegate,
-    UITableViewDataSource {
+        for pet in
+            PetManager.shared.allPets {
 
+            let button =
+                UIButton(type: .system)
 
-    func tableView(
-        _ tableView: UITableView,
-        numberOfRowsInSection section: Int
-    ) -> Int {
+            let owned =
+                PetManager.shared.isOwned(pet)
 
-        return pets.count
-    }
-
-
-    func tableView(
-        _ tableView: UITableView,
-        cellForRowAt indexPath: IndexPath
-    ) -> UITableViewCell {
-
-        let cell =
-            tableView.dequeueReusableCell(
-                withIdentifier:
-                    "PetSelectCell",
-                for: indexPath
+            button.setTitle(
+                owned
+                ? "\(pet.name) \(pet.rarityText)"
+                : "🔒 ???",
+                for: .normal
             )
 
+            button.setTitleColor(
+                .label,
+                for: .normal
+            )
 
-        let pet =
-            pets[indexPath.row]
+            button.backgroundColor =
+                owned
+                ? UIColor.systemGreen
+                    .withAlphaComponent(0.2)
+                : UIColor.systemGray
+                    .withAlphaComponent(0.2)
 
+            button.layer.cornerRadius =
+                10
 
-        cell.textLabel?.text =
-            "\(pet.name)  \(String(repeating: "★", count: pet.rarity))"
+            button.heightAnchor.constraint(
+                equalToConstant: 48
+            ).isActive = true
 
+            button.isEnabled =
+                owned
 
-        if let image =
-            UIImage(
-                named: pet.imageName
-            ) {
+            button.addAction(
+                UIAction { _ in
 
-            cell.imageView?.image =
-                image
+                    PetManager.shared.selectedPetName =
+                        pet.name
+
+                    self.navigationController?
+                        .popViewController(
+                            animated: true
+                        )
+                },
+                for: .touchUpInside
+            )
+
+            stack.addArrangedSubview(
+                button
+            )
         }
-
-
-        if PetManager.shared.selectedPet?.id
-            == pet.id {
-
-            cell.accessoryType =
-                .checkmark
-
-        } else {
-
-            cell.accessoryType =
-                .none
-        }
-
-
-        return cell
-    }
-
-
-    func tableView(
-        _ tableView: UITableView,
-        didSelectRowAt indexPath: IndexPath
-    ) {
-
-        let pet =
-            pets[indexPath.row]
-
-
-        PetManager.shared.selectPet(
-            pet
-        )
-
-
-        tableView.reloadData()
     }
 }

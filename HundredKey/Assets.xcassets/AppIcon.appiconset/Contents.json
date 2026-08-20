@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "アイコンです 1.png",
+      "filename" : "アイコンです.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "アイコンです.png",
+      "filename" : "アイコンです 4.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -25,7 +25,6 @@
           "value" : "tinted"
         }
       ],
-      "filename" : "アイコンです 2.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

@@ -1,36 +1,32 @@
 //
-//  PetBookViewController.swift
+//  PetBookViewController 2.swift
 //  HundredKey
 //
-//  Created by 鈴木久美 on 2026/08/13.
+//  Created by 鈴木久美 on 2026/08/19.
 //
 
-
-//
-//  PetBookViewController.swift
-//  Hundred_Key
-//
 
 import UIKit
 
-class PetBookViewController: UIViewController {
+final class PetBookViewController:
+    UIViewController {
 
-    @IBOutlet weak var collectionView: UICollectionView!
+    private let textView =
+        UITextView()
 
+    private let selectButton =
+        UIButton(type: .system)
 
     override func viewDidLoad() {
+
         super.viewDidLoad()
 
-        collectionView.delegate = self
-        collectionView.dataSource = self
+        title = "ペット図鑑"
 
-        collectionView.register(
-            UICollectionViewCell.self,
-            forCellWithReuseIdentifier:
-                "PetCell"
-        )
+        setupUI()
+
+        showBook()
     }
-
 
     override func viewWillAppear(
         _ animated: Bool
@@ -38,124 +34,134 @@ class PetBookViewController: UIViewController {
 
         super.viewWillAppear(animated)
 
-        collectionView.reloadData()
-    }
-}
-
-
-// MARK: - UICollectionView
-
-extension PetBookViewController:
-    UICollectionViewDelegate,
-    UICollectionViewDataSource {
-
-
-    func collectionView(
-        _ collectionView: UICollectionView,
-        numberOfItemsInSection section: Int
-    ) -> Int {
-
-        return PetManager.shared.allPets.count
+        showBook()
     }
 
+    private func setupUI() {
 
-    func collectionView(
-        _ collectionView: UICollectionView,
-        cellForItemAt indexPath: IndexPath
-    ) -> UICollectionViewCell {
+        textView.isEditable =
+            false
 
-        let cell =
-            collectionView.dequeueReusableCell(
-                withReuseIdentifier:
-                    "PetCell",
-                for: indexPath
+        textView.font =
+            .systemFont(
+                ofSize: 19
             )
 
-
-        let pet =
-            PetManager.shared.allPets[
-                indexPath.item
-            ]
-
-
-        // 既存のImageViewを削除
-        cell.contentView.subviews.forEach {
-            $0.removeFromSuperview()
-        }
-
-
-        let imageView =
-            UIImageView(
-                frame: CGRect(
-                    x: 10,
-                    y: 5,
-                    width: 80,
-                    height: 80
-                )
-            )
-
-
-        imageView.contentMode =
-            .scaleAspectFit
-
-
-        if PetManager.shared.hasPet(pet) {
-
-            imageView.image =
-                UIImage(
-                    named: pet.imageName
-                )
-
-        } else {
-
-            imageView.image =
-                UIImage(
-                    systemName: "questionmark"
-                )
-        }
-
-
-        cell.contentView.addSubview(
-            imageView
+        selectButton.setTitle(
+            "ペットを選ぶ",
+            for: .normal
         )
 
+        selectButton.setTitleColor(
+            .white,
+            for: .normal
+        )
 
-        return cell
-    }
+        selectButton.backgroundColor =
+            .systemGreen
 
+        selectButton.layer.cornerRadius =
+            12
 
-    func collectionView(
-        _ collectionView: UICollectionView,
-        didSelectItemAt indexPath: IndexPath
-    ) {
+        selectButton.addTarget(
+            self,
+            action: #selector(selectPet),
+            for: .touchUpInside
+        )
 
-        let pet =
-            PetManager.shared.allPets[
-                indexPath.item
-            ]
+        view.addSubview(textView)
 
+        view.addSubview(selectButton)
 
-        if PetManager.shared.hasPet(pet) {
+        textView.translatesAutoresizingMaskIntoConstraints =
+            false
 
-            performSegue(
-                withIdentifier: "toPetDetail",
-                sender: pet
+        selectButton.translatesAutoresizingMaskIntoConstraints =
+            false
+
+        NSLayoutConstraint.activate([
+
+            textView.topAnchor.constraint(
+                equalTo:
+                    view.safeAreaLayoutGuide
+                    .topAnchor,
+                constant: 10
+            ),
+
+            textView.leadingAnchor.constraint(
+                equalTo:
+                    view.leadingAnchor,
+                constant: 20
+            ),
+
+            textView.trailingAnchor.constraint(
+                equalTo:
+                    view.trailingAnchor,
+                constant: -20
+            ),
+
+            textView.bottomAnchor.constraint(
+                equalTo:
+                    selectButton.topAnchor,
+                constant: -10
+            ),
+
+            selectButton.leadingAnchor.constraint(
+                equalTo:
+                    view.leadingAnchor,
+                constant: 40
+            ),
+
+            selectButton.trailingAnchor.constraint(
+                equalTo:
+                    view.trailingAnchor,
+                constant: -40
+            ),
+
+            selectButton.bottomAnchor.constraint(
+                equalTo:
+                    view.safeAreaLayoutGuide
+                    .bottomAnchor,
+                constant: -10
+            ),
+
+            selectButton.heightAnchor.constraint(
+                equalToConstant: 50
             )
-        }
+        ])
     }
 
+    private func showBook() {
 
-    override func prepare(
-        for segue: UIStoryboardSegue,
-        sender: Any?
-    ) {
+        var text =
+            "🐾 ペット図鑑\n\n"
 
-        if let detailVC =
-            segue.destination
-                as? PetDetailViewController {
+        for pet in
+            PetManager.shared.allPets {
 
-            detailVC.pet =
-                sender as? Pet
+            if PetManager.shared.isOwned(pet) {
+
+                text +=
+                    "🟢 \(pet.name) " +
+                    "\(pet.rarityText)\n\n"
+
+            } else {
+
+                text +=
+                    "🔒 ??? " +
+                    "\(pet.rarityText)\n\n"
+            }
         }
+
+        textView.text =
+            text
+    }
+
+    @objc private func selectPet() {
+
+        navigationController?.pushViewController(
+            PetSelectViewController(),
+            animated: true
+        )
     }
 }

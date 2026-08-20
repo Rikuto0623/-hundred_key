@@ -5,47 +5,75 @@
 //  Created by 鈴木久美 on 2026/08/13.
 //
 
+//
+//  CorrectViewController.swift
+//  hundredKey
+//
+
 import UIKit
 
 class CorrectViewController: UIViewController {
 
-    @IBOutlet weak var correctAnswerLabel: UILabel!
-    @IBOutlet weak var petImageView: UIImageView!
-    @IBOutlet weak var nextButton: UIButton!
+    // MARK: - Quizから受け取る
 
     var correctAnswer: Int = 0
+    var point: Int = 10
 
-    // QuizViewを保持
-    weak var quizViewController: QuizViewController?
+    var isLastQuestion: Bool = false
+
+    var onNext: (() -> Void)?
+
+    // MARK: - UI
+
+    @IBOutlet weak var titleLabel: UILabel!
+    @IBOutlet weak var answerLabel: UILabel!
+    @IBOutlet weak var pointLabel: UILabel!
+    @IBOutlet weak var nextButton: UIButton!
+    @IBOutlet weak var petImageView: UIImageView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        correctAnswerLabel.text =
-            "正解！\n答えは \(correctAnswer)"
-
-        showPet()
+        setupUI()
     }
 
-    private func showPet() {
+    private func setupUI() {
 
-        guard let pet =
-            PetManager.shared.selectedPet else {
-            return
+        titleLabel.text = "正解！すごい！"
+
+        answerLabel.text =
+            "答えは \(correctAnswer) だよ！"
+
+        pointLabel.text =
+            "+ \(point) pt"
+
+        if isLastQuestion {
+
+            nextButton.setTitle(
+                "結果を見る",
+                for: .normal
+            )
+
+        } else {
+
+            nextButton.setTitle(
+                "次へ",
+                for: .normal
+            )
         }
 
-        petImageView.image =
-            UIImage(named: pet.imageName)
+        nextButton.layer.cornerRadius = 10
     }
 
     @IBAction func nextButtonTapped(
         _ sender: UIButton
     ) {
 
-        // QuizViewに戻る
-        dismiss(animated: true) {
+        dismiss(
+            animated: true
+        ) { [weak self] in
 
-            self.quizViewController?.showNextQuestion()
+            self?.onNext?()
         }
     }
 }

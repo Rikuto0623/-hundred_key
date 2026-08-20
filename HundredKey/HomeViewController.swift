@@ -13,27 +13,47 @@
 
 import UIKit
 
-class HomeViewController: UIViewController {
+final class HomeViewController:
+    UIViewController {
 
-    @IBOutlet weak var nameLabel: UILabel!
+    private let pointLabel =
+        UILabel()
 
-    @IBOutlet weak var pointLabel: UILabel!
+    private let petImageView =
+        UIImageView()
 
-    @IBOutlet weak var petImageView: UIImageView!
+    private let startButton =
+        UIButton(type: .system)
 
-    @IBOutlet weak var petNameLabel: UILabel!
+    private let gachaButton =
+        UIButton(type: .system)
 
+    private let bookButton =
+        UIButton(type: .system)
+
+    private let rankingButton =
+        UIButton(type: .system)
+
+    private let settingsButton =
+        UIButton(type: .system)
+
+    private let missionButton =
+        UIButton(type: .system)
 
     override func viewDidLoad() {
+
         super.viewDidLoad()
 
-        PetManager.shared.setupDefaultPet()
+        title = "HUNDRED KEY"
 
-        updateHome()
+        setupUI()
 
-        BGMManager.shared.playBGM()
+        updateUI()
+
+        BGMManager.shared.playBGM(
+            name: "HundredKey_BGM"
+        )
     }
-
 
     override func viewWillAppear(
         _ animated: Bool
@@ -41,105 +61,280 @@ class HomeViewController: UIViewController {
 
         super.viewWillAppear(animated)
 
-        updateHome()
-
-        BGMManager.shared.playBGM()
+        updateUI()
     }
 
+    private func setupUI() {
 
-    private func updateHome() {
+        view.backgroundColor =
+            UIColor.systemBlue
+                .withAlphaComponent(0.08)
 
-        let name =
-            UserDefaults.standard.string(
-                forKey: "USER_NAME"
-            ) ?? "ゲスト"
+        pointLabel.textAlignment =
+            .center
 
+        pointLabel.font =
+            .boldSystemFont(
+                ofSize: 20
+            )
 
-        nameLabel.text =
-            "\(name)さん"
+        petImageView.contentMode =
+            .scaleAspectFit
 
+        makeButton(
+            startButton,
+            title: "ゲームスタート"
+        )
+
+        makeButton(
+            gachaButton,
+            title: "ガチャ"
+        )
+
+        makeButton(
+            bookButton,
+            title: "ペット図鑑"
+        )
+
+        makeButton(
+            rankingButton,
+            title: "ランキング"
+        )
+
+        makeButton(
+            settingsButton,
+            title: "設定"
+        )
+
+        makeButton(
+            missionButton,
+            title: "今日のミッション"
+        )
+
+        startButton.addTarget(
+            self,
+            action: #selector(startGame),
+            for: .touchUpInside
+        )
+
+        gachaButton.addTarget(
+            self,
+            action: #selector(gacha),
+            for: .touchUpInside
+        )
+
+        bookButton.addTarget(
+            self,
+            action: #selector(book),
+            for: .touchUpInside
+        )
+
+        rankingButton.addTarget(
+            self,
+            action: #selector(ranking),
+            for: .touchUpInside
+        )
+
+        settingsButton.addTarget(
+            self,
+            action: #selector(settings),
+            for: .touchUpInside
+        )
+
+        missionButton.addTarget(
+            self,
+            action: #selector(mission),
+            for: .touchUpInside
+        )
+
+        let stack =
+            UIStackView(
+                arrangedSubviews: [
+                    pointLabel,
+                    petImageView,
+                    startButton,
+                    gachaButton,
+                    bookButton,
+                    rankingButton,
+                    settingsButton,
+                    missionButton
+                ]
+            )
+
+        stack.axis = .vertical
+        stack.spacing = 9
+
+        view.addSubview(stack)
+
+        stack.translatesAutoresizingMaskIntoConstraints =
+            false
+
+        NSLayoutConstraint.activate([
+
+            stack.centerYAnchor.constraint(
+                equalTo:
+                    view.centerYAnchor
+            ),
+
+            stack.leadingAnchor.constraint(
+                equalTo:
+                    view.leadingAnchor,
+                constant: 35
+            ),
+
+            stack.trailingAnchor.constraint(
+                equalTo:
+                    view.trailingAnchor,
+                constant: -35
+            ),
+
+            petImageView.heightAnchor.constraint(
+                equalToConstant: 110
+            )
+        ])
+    }
+
+    private func makeButton(
+        _ button: UIButton,
+        title: String
+    ) {
+
+        button.setTitle(
+            title,
+            for: .normal
+        )
+
+        button.setTitleColor(
+            .white,
+            for: .normal
+        )
+
+        button.backgroundColor =
+            .systemGreen
+
+        button.layer.cornerRadius =
+            12
+
+        button.titleLabel?.font =
+            .boldSystemFont(
+                ofSize: 18
+            )
+
+        button.heightAnchor.constraint(
+            equalToConstant: 48
+        ).isActive = true
+    }
+
+    private func updateUI() {
 
         pointLabel.text =
-            "\(PointManager.shared.point) pt"
+            "🪙 \(PointManager.shared.points) pt"
 
+        let petName =
+            PetManager.shared.selectedPetName
 
-        if let pet =
-            PetManager.shared.selectedPet {
-
-            petNameLabel.text =
-                pet.name
-
-            petImageView.image =
-                UIImage(
-                    named: pet.imageName
-                )
-        }
+        petImageView.image =
+            PetManager.shared
+                .pet(named: petName)
+                .flatMap {
+                    UIImage(
+                        named: $0.imageName
+                    )
+                }
     }
 
-
-    // MARK: - ゲーム開始
-
-    @IBAction func gameStartButtonTapped(
-        _ sender: UIButton
-    ) {
+    @objc private func startGame() {
 
         GameSession.shared.startGame()
 
-        performSegue(
-            withIdentifier: "toQuiz",
-            sender: nil
+        BGMManager.shared.stopBGM()
+
+        navigationController?.pushViewController(
+            QuizViewController(),
+            animated: true
         )
     }
 
+    @objc private func gacha() {
 
-    // MARK: - ガチャ
-
-    @IBAction func gachaButtonTapped(
-        _ sender: UIButton
-    ) {
-
-        performSegue(
-            withIdentifier: "toGacha",
-            sender: nil
+        navigationController?.pushViewController(
+            GachaViewController(),
+            animated: true
         )
     }
 
+    @objc private func book() {
 
-    // MARK: - 図鑑
-
-    @IBAction func petBookButtonTapped(
-        _ sender: UIButton
-    ) {
-
-        performSegue(
-            withIdentifier: "toPetBook",
-            sender: nil
+        navigationController?.pushViewController(
+            PetBookViewController(),
+            animated: true
         )
     }
 
+    @objc private func ranking() {
 
-    // MARK: - ランキング
-
-    @IBAction func rankingButtonTapped(
-        _ sender: UIButton
-    ) {
-
-        performSegue(
-            withIdentifier: "toRanking",
-            sender: nil
+        navigationController?.pushViewController(
+            RankingViewController(),
+            animated: true
         )
     }
 
+    @objc private func settings() {
 
-    // MARK: - 設定
+        navigationController?.pushViewController(
+            SettingsViewController(),
+            animated: true
+        )
+    }
+    
+    @objc private func Mission() {
 
-    @IBAction func settingsButtonTapped(
-        _ sender: UIButton
-    ) {
+        navigationController?.pushViewController(
+            SettingsViewController(),
+            animated: true
+        )
+    }
 
-        performSegue(
-            withIdentifier: "toSettings",
-            sender: nil
+    @objc private func mission() {
+
+        let alert =
+            UIAlertController(
+                title: "今日のミッション",
+                message:
+                    "正解 \(DailyMissionManager.shared.correctCount) / 10 問\n\n10問正解で50pt！",
+                preferredStyle: .alert
+            )
+
+        if DailyMissionManager.shared
+            .correctCount >= 10 &&
+            !DailyMissionManager.shared
+                .isRewardReceived {
+
+            alert.addAction(
+                UIAlertAction(
+                    title: "報酬を受け取る",
+                    style: .default
+                ) { _ in
+
+                    _ =
+                        DailyMissionManager.shared
+                            .receiveReward()
+
+                    self.updateUI()
+                }
+            )
+        }
+
+        alert.addAction(
+            UIAlertAction(
+                title: "閉じる",
+                style: .cancel
+            )
+        )
+
+        present(
+            alert,
+            animated: true
         )
     }
 }
